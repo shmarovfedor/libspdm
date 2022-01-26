@@ -4,6 +4,8 @@ $HOME/esbmc/release/bin/esbmc \
  --force-malloc-success \
  --no-library \
  --goto-unwind \
+ --k-step 7 --unlimited-k-steps \
+ --k-induction --max-inductive-step 3 \
  $LIBSPDM/unit_test/model_check/test_spdm_requester_get_version/get_version.c \
  $LIBSPDM/unit_test/fuzzing/spdm_unit_fuzzing_common/common.c \
  $LIBSPDM/library/spdm_requester_lib/libspdm_req_get_version.c \
