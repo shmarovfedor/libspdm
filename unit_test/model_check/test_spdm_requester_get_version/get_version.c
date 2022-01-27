@@ -7,6 +7,7 @@
 #include "spdm_unit_test.h"
 #include "internal/libspdm_requester_lib.h"
 
+ 
 #pragma pack(1)
 typedef struct {
     spdm_message_header_t header;
@@ -16,47 +17,20 @@ typedef struct {
 } spdm_version_response_mine_t;
 #pragma pack()
 
+///////////////////////////////////////////////////////////////////
+
+// declare global vairables that can be used in the asserions
+
+spdm_version_response_mine_t spdm_response;
+return_status spdm_response_ret_status;
+
 return_status spdm_requester_get_version_test_send_message(
     IN void *spdm_context, IN uintn request_size, IN void *request,
     IN uint64_t timeout)
 {
     spdm_test_context_t *spdm_test_context;
-
     spdm_test_context = get_spdm_test_context();
-    switch (spdm_test_context->case_id) {
-    case 0x1:
-        return RETURN_DEVICE_ERROR;
-    case 0x2:
-        return RETURN_SUCCESS;
-    case 0x3:
-        return RETURN_SUCCESS;
-    case 0x4:
-        return RETURN_SUCCESS;
-    case 0x5:
-        return RETURN_SUCCESS;
-    case 0x6:
-        return RETURN_SUCCESS;
-    case 0x7:
-        return RETURN_SUCCESS;
-    case 0x8:
-        return RETURN_SUCCESS;
-    case 0x9:
-        return RETURN_SUCCESS;
-    case 0xA:
-        return RETURN_SUCCESS;
-    case 0xB:
-        return RETURN_SUCCESS;
-    case 0xC:
-        return RETURN_SUCCESS;
-    case 0xD:
-        return RETURN_SUCCESS;
-    case 0xE:
-        return RETURN_SUCCESS;
-    case 0xF:
-        return RETURN_SUCCESS;
-    default:
-        return RETURN_DEVICE_ERROR;
-    }
+    return RETURN_SUCCESS;
 }
 
 return_status spdm_requester_get_version_test_receive_message(
@@ -64,675 +38,82 @@ return_status spdm_requester_get_version_test_receive_message(
     IN OUT void *response, IN uint64_t timeout)
 {
     spdm_test_context_t *spdm_test_context;
+    spdm_test_context = get_spdm_test_context();
+    spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
+                        FALSE, sizeof(spdm_response),
+                        &spdm_response,
+                        response_size, response);
+
+    //return spdm_response_ret_status;
+    return RETURN_SUCCESS;
+}
+
+boolean is_member(spdm_version_number_t *ver_set, uintn ver_num, spdm_version_number_t ver) {
+  for (int i=0; i<ver_num; i++) {
+    if (const_compare_mem(&ver_set[i], &ver, sizeof(spdm_version_number_t)) == 0)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+void test_try_spdm_get_version() {
+    return_status ret;
+    spdm_test_context_t *spdm_test_context;
+    spdm_context_t *context;
 
     spdm_test_context = get_spdm_test_context();
-    switch (spdm_test_context->case_id) {
-    case 0x1:
-        return RETURN_DEVICE_ERROR;
-
-    case 0x2: {
-        spdm_version_response_mine_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 2;
-        spdm_response.version_number_entry[0].major_version = 1;
-        spdm_response.version_number_entry[0].minor_version = 0;
-        spdm_response.version_number_entry[1].major_version = 1;
-        spdm_response.version_number_entry[1].minor_version = 1;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0x3: {
-        spdm_version_response spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 0;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0x4: {
-        spdm_error_response_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_ERROR;
-        spdm_response.header.param1 = SPDM_ERROR_CODE_INVALID_REQUEST;
-        spdm_response.header.param2 = 0;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0x5: {
-        spdm_error_response_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_ERROR;
-        spdm_response.header.param1 = SPDM_ERROR_CODE_BUSY;
-        spdm_response.header.param2 = 0;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0x6: {
-        static uintn sub_index1 = 0;
-        if (sub_index1 == 0) {
-            spdm_error_response_t spdm_response;
-
-            zero_mem(&spdm_response, sizeof(spdm_response));
-            spdm_response.header.spdm_version =
-                SPDM_MESSAGE_VERSION_10;
-            spdm_response.header.request_response_code = SPDM_ERROR;
-            spdm_response.header.param1 = SPDM_ERROR_CODE_BUSY;
-            spdm_response.header.param2 = 0;
-
-            spdm_transport_test_encode_message(
-                spdm_context, NULL, FALSE, FALSE,
-                sizeof(spdm_response), &spdm_response,
-                response_size, response);
-        } else if (sub_index1 == 1) {
-            spdm_version_response_mine_t spdm_response;
-
-            zero_mem(&spdm_response, sizeof(spdm_response));
-            spdm_response.header.spdm_version =
-                SPDM_MESSAGE_VERSION_10;
-            spdm_response.header.request_response_code =
-                SPDM_VERSION;
-            spdm_response.header.param1 = 0;
-            spdm_response.header.param2 = 0;
-            spdm_response.version_number_entry_count = 2;
-            spdm_response.version_number_entry[0].major_version = 1;
-            spdm_response.version_number_entry[0].minor_version = 0;
-            spdm_response.version_number_entry[1].major_version = 1;
-            spdm_response.version_number_entry[1].minor_version = 1;
-
-            spdm_transport_test_encode_message(
-                spdm_context, NULL, FALSE, FALSE,
-                sizeof(spdm_response), &spdm_response,
-                response_size, response);
-        }
-        sub_index1++;
-    }
-        return RETURN_SUCCESS;
-
-    case 0x7: {
-        spdm_error_response_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_ERROR;
-        spdm_response.header.param1 = SPDM_ERROR_CODE_REQUEST_RESYNCH;
-        spdm_response.header.param2 = 0;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0x8: {
-        spdm_error_response_data_response_not_ready_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_ERROR;
-        spdm_response.header.param1 =
-            SPDM_ERROR_CODE_RESPONSE_NOT_READY;
-        spdm_response.header.param2 = 0;
-        spdm_response.extend_error_data.rd_exponent = 1;
-        spdm_response.extend_error_data.rd_tm = 1;
-        spdm_response.extend_error_data.request_code = SPDM_GET_VERSION;
-        spdm_response.extend_error_data.token = 0;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0x9: {
-        static uintn sub_index2 = 0;
-        if (sub_index2 == 0) {
-            spdm_error_response_data_response_not_ready_t
-                spdm_response;
-
-            zero_mem(&spdm_response, sizeof(spdm_response));
-            spdm_response.header.spdm_version =
-                SPDM_MESSAGE_VERSION_10;
-            spdm_response.header.request_response_code = SPDM_ERROR;
-            spdm_response.header.param1 =
-                SPDM_ERROR_CODE_RESPONSE_NOT_READY;
-            spdm_response.header.param2 = 0;
-            spdm_response.extend_error_data.rd_exponent = 1;
-            spdm_response.extend_error_data.rd_tm = 1;
-            spdm_response.extend_error_data.request_code =
-                SPDM_GET_VERSION;
-            spdm_response.extend_error_data.token = 1;
-
-            spdm_transport_test_encode_message(
-                spdm_context, NULL, FALSE, FALSE,
-                sizeof(spdm_response), &spdm_response,
-                response_size, response);
-        } else if (sub_index2 == 1) {
-            spdm_version_response_mine_t spdm_response;
-
-            zero_mem(&spdm_response, sizeof(spdm_response));
-            spdm_response.header.spdm_version =
-                SPDM_MESSAGE_VERSION_10;
-            spdm_response.header.request_response_code =
-                SPDM_VERSION;
-            spdm_response.header.param1 = 0;
-            spdm_response.header.param2 = 0;
-            spdm_response.version_number_entry_count = 2;
-            spdm_response.version_number_entry[0].major_version = 1;
-            spdm_response.version_number_entry[0].minor_version = 0;
-            spdm_response.version_number_entry[1].major_version = 1;
-            spdm_response.version_number_entry[1].minor_version = 1;
-
-            spdm_transport_test_encode_message(
-                spdm_context, NULL, FALSE, FALSE,
-                sizeof(spdm_response), &spdm_response,
-                response_size, response);
-        }
-        sub_index2++;
-    }
-        return RETURN_SUCCESS;
-
-    case 0xA: {
-        spdm_version_response_mine_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 2;
-        spdm_response.version_number_entry[0].major_version = 1;
-        spdm_response.version_number_entry[0].minor_version = 0;
-        spdm_response.version_number_entry[1].major_version = 1;
-        spdm_response.version_number_entry[1].minor_version = 1;
-        spdm_response.version_number_entry[2].major_version = 1;
-        spdm_response.version_number_entry[2].minor_version = 2;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0xB: {
-        spdm_version_response_mine_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 2;
-        spdm_response.version_number_entry[0].major_version = 10;
-        spdm_response.version_number_entry[0].minor_version = 0;
-        spdm_response.version_number_entry[1].major_version = 10;
-        spdm_response.version_number_entry[1].minor_version = 1;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0xC: {
-        spdm_version_response_mine_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_11;
-        spdm_response.header.request_response_code = SPDM_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 2;
-        spdm_response.version_number_entry[0].major_version = 1;
-        spdm_response.version_number_entry[0].minor_version = 0;
-        spdm_response.version_number_entry[1].major_version = 1;
-        spdm_response.version_number_entry[1].minor_version = 1;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-    case 0xD: {
-        spdm_version_response_mine_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_GET_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 2;
-        spdm_response.version_number_entry[0].major_version = 1;
-        spdm_response.version_number_entry[0].minor_version = 0;
-        spdm_response.version_number_entry[1].major_version = 1;
-        spdm_response.version_number_entry[1].minor_version = 1;
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-
-  case 0xE:
-  {
-    static uint16_t error_code = SPDM_ERROR_CODE_RESERVED_00;
-
-    spdm_error_response_t                        spdm_response;
-
-    if(error_code <= 0xff) {
-      zero_mem (&spdm_response, sizeof(spdm_response));
-      spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-      spdm_response.header.request_response_code = SPDM_ERROR;
-      spdm_response.header.param1 = (uint8_t) error_code;
-
-      spdm_transport_test_encode_message (spdm_context, NULL, FALSE, FALSE, sizeof(spdm_response), &spdm_response, response_size, response);
-    }
-
-    error_code++;
-    if(error_code == SPDM_ERROR_CODE_BUSY) { /*busy is treated in cases 5 and 6*/
-      error_code = SPDM_ERROR_CODE_UNEXPECTED_REQUEST;
-    }
-    if(error_code == SPDM_ERROR_CODE_RESERVED_0D) { /*skip some reserved error codes (0d to 3e)*/
-      error_code = SPDM_ERROR_CODE_RESERVED_3F;
-    }
-    if(error_code == SPDM_ERROR_CODE_RESPONSE_NOT_READY) { /*skip response not ready, request resync, and some reserved codes (44 to fc)*/
-      error_code = SPDM_ERROR_CODE_RESERVED_FD;
-    }
-  }
-    return RETURN_SUCCESS;
-
-    case 0xF: {
-        spdm_version_response_mine_t spdm_response;
-
-        zero_mem(&spdm_response, sizeof(spdm_response));
-        spdm_response.header.spdm_version = SPDM_MESSAGE_VERSION_10;
-        spdm_response.header.request_response_code = SPDM_VERSION;
-        spdm_response.header.param1 = 0;
-        spdm_response.header.param2 = 0;
-        spdm_response.version_number_entry_count = 5;
-        spdm_response.version_number_entry[0].major_version = 4;
-        spdm_response.version_number_entry[0].minor_version = 2;
-        spdm_response.version_number_entry[1].major_version = 5;
-        spdm_response.version_number_entry[1].minor_version = 2;
-        spdm_response.version_number_entry[2].major_version = 1;
-        spdm_response.version_number_entry[2].minor_version = 2;
-        spdm_response.version_number_entry[3].major_version = 1;
-        spdm_response.version_number_entry[3].minor_version = 1;
-        spdm_response.version_number_entry[4].major_version = 1;
-        spdm_response.version_number_entry[4].minor_version = 0;
-
-
-        spdm_transport_test_encode_message(spdm_context, NULL, FALSE,
-                           FALSE, sizeof(spdm_response),
-                           &spdm_response,
-                           response_size, response);
-    }
-        return RETURN_SUCCESS;
-    default:
-        return RETURN_DEVICE_ERROR;
-    }
-}
-
-/**
-  Test 1: when no VERSION message is received, and the client returns a device error.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case1(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
+    context = spdm_test_context->spdm_context;
     spdm_test_context->case_id = 0x1;
+    
+    ret = try_spdm_get_version(context);
+    // 1. check return code
+    if RETURN_ERROR(ret)
+        assert(ret == RETURN_DEVICE_ERROR);
 
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
+    uintn spdm_response_size = sizeof(spdm_response);
+    // 2. check error handling
+    if (spdm_response_size < sizeof(spdm_message_header_t))
+      assert(ret == RETURN_DEVICE_ERROR);
 
-/**
-  Test 2: receiving a correct VERSION message with available version 1.0 and 1.1.
-  Expected behavior: client returns a status of RETURN_SUCCESS.
-**/
-void test_spdm_requester_get_version_case2(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
+    if (spdm_response.header.request_response_code == SPDM_ERROR)
+      assert(ret == RETURN_DEVICE_ERROR);
 
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x2;
+    // and so on
 
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_SUCCESS);
-}
+ 
 
-/**
-  Test 3: receiving a correct VERSION message header, but with 0 versions available.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case3(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
+    // 3. check cache state
 
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x3;
+    // make sure context.transcript.message_a.buffer has some content
 
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
+    // everything is fine
+    assert(context->connection_info.connection_state == LIBSPDM_CONNECTION_STATE_AFTER_VERSION);
+    assert(ret == RETURN_SUCCESS);
 
-/**
-  Test 4: receiving an InvalidRequest ERROR message from the responder.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case4(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
+    // needs to be stronger, we know the exact number
+    assert(context->transcript.message_a.buffer_size != 0);
 
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x4;
+    spdm_version_number_t ver = context->connection_info.version;
+    spdm_version_number_t *req_ver_set = context->local_context.version.spdm_version;
+    uint8_t                req_ver_num = context->local_context.version.spdm_version_count;
+    spdm_version_number_t *res_ver_set = spdm_response.version_number_entry;
+    uint8_t                res_ver_num = spdm_response.version_number_entry_count;
 
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
+    // ver must be in both req_ver_set and res_ver_set
+    assert(is_member(req_ver_set, req_ver_num, ver));
+    assert(is_member(res_ver_set, res_ver_num, ver));
 
-/**
-  Test 5: receiving an Busy ERROR message correct VERSION message from the responder.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case5(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
+    // any version in req_ver_set is higher than ver must not in res_ver_set
+    unsigned int i = nondet_uint();
+    __ESBMC_assume(i < req_ver_num);
+    if (spdm_version_number_compare(req_ver_set[i], ver))
+      assert(!is_member(res_ver_set, res_ver_num, req_ver_set[i]));
 
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x5;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_NO_RESPONSE);
-}
-
-/**
-  Test 6: on the first try, receiving a Busy ERROR message, and on retry, receiving
-  a correct VERSION message with available version 1.0 and 1.1.
-  Expected behavior: client returns a status of RETURN_SUCCESS.
-**/
-void test_spdm_requester_get_version_case6(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x6;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_SUCCESS);
-}
-
-/**
-  Test 7: receiving a RequestResynch ERROR message from the responder.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR, and the
-  internal state should be reset.
-  Note: As from 1.1.c, this is an unexpected behavior, as the responder should not
-  respond a GET_VERSION message with a RequestResynch. It should expect a GET_VERSION.
-**/
-void test_spdm_requester_get_version_case7(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x7;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-    assert_int_equal(spdm_context->connection_info.connection_state,
-             LIBSPDM_CONNECTION_STATE_NOT_STARTED);
-}
-
-/**
-  Test 8: receiving a ResponseNotReady ERROR message from the responder.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-  Note: As from 1.0.0, this is an unexpected behavior, as the responder should not
-  respond a GET_VERSION message with a ResponseNotReady.
-**/
-void test_spdm_requester_get_version_case8(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x8;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
-
-/**
-  Test 9: on the first try, receiving a ResponseNotReady ERROR message, and on retry,
-  receiving a correct VERSION message with available version 1.0 and 1.1.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-  Note: The responder should not
-  respond a GET_VERSION message with a ResponseNotReady.
-**/
-void test_spdm_requester_get_version_case9(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0x9;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
-
-/**
-  Test 10: receiving a VERSION message with a larger list of available versions than indicated.
-  The presence of only two versions are indicated, but the VERSION message presents a list
-  with 3 versions: 1.0, 1.1 and 1.2.
-  Expected behavior: client returns a status of RETURN_SUCCESS, but truncate the message
-  to consider only the two first versions, as indicated in the message.
-**/
-void test_spdm_requester_get_version_case10(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0xA;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_SUCCESS);
-}
-
-/**
-  Test 11: receiving a correct VERSION message with available version 10.0 and 10.1, but
-  the requester do not have compatible versions with the responder.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case11(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0xB;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
-
-/**
-  Test 12: receiving a VERSION message in SPDM version 1.1 (in the header), but correct
-  1.0-version format, with available version 1.0 and 1.1.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case12(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0xC;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
-
-/**
-  Test 13: receiving a VERSION message with wrong SPDM request_response_code (in this
-  case, GET_VERSION 0x84 instead of VERSION 0x04). The remaining data is a correct
-  VERSION message, with available version 1.0 and 1.1.
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case13(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0xD;
-
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_DEVICE_ERROR);
-}
-
-/**
-  Test 14: receiving an unexpected ERROR message from the responder.
-  There are tests for all named codes, including some reserved ones
-  (namely, 0x00, 0x0b, 0x0c, 0x3f, 0xfd, 0xfe).
-  However, for having specific test cases, it is excluded from this case:
-  Busy (0x03), ResponseNotReady (0x42), and RequestResync (0x43).
-  Expected behavior: client returns a status of RETURN_DEVICE_ERROR.
-**/
-void test_spdm_requester_get_version_case14(void **state) {
-  return_status        status;
-  spdm_test_context_t    *spdm_test_context;
-  spdm_context_t  *spdm_context;
-  uint16_t                error_code;
-
-  spdm_test_context = *state;
-  spdm_context = spdm_test_context->spdm_context;
-  spdm_test_context->case_id = 0xE;
-
-  error_code = SPDM_ERROR_CODE_RESERVED_00;
-  while(error_code <= 0xff) {
-    /* no additional state control is necessary as a new GET_VERSION resets the state*/
-    status = spdm_get_version (spdm_context);
-    ASSERT_INT_EQUAL_CASE (status, RETURN_DEVICE_ERROR, error_code);
-
-    error_code++;
-    if(error_code == SPDM_ERROR_CODE_BUSY) { /*busy is treated in cases 5 and 6*/
-      error_code = SPDM_ERROR_CODE_UNEXPECTED_REQUEST;
-    }
-    if(error_code == SPDM_ERROR_CODE_RESERVED_0D) { /*skip some reserved error codes (0d to 3e)*/
-      error_code = SPDM_ERROR_CODE_RESERVED_3F;
-    }
-    if(error_code == SPDM_ERROR_CODE_RESPONSE_NOT_READY) { /*skip response not ready, request resync, and some reserved codes (44 to fc)*/
-      error_code = SPDM_ERROR_CODE_RESERVED_FD;
-    }
-  }
-}
-
-/**
-  Test 15: receiving a VERSION message with unordered vesion list.
-  Requester list:5.5, 4.5, 0.9, 1.0, 1.1
-  Responder list:4.2, 5.2, 1.2, 1.1, 1.0
-  Expected behavior: client returns a status of RETURN_SUCCESS and right negotiated version 1.1.
-**/
-void test_spdm_requester_get_version_case15(void **state)
-{
-    return_status status;
-    spdm_test_context_t *spdm_test_context;
-    spdm_context_t *spdm_context;
-
-    spdm_test_context = *state;
-    spdm_context = spdm_test_context->spdm_context;
-    spdm_test_context->case_id = 0xF;
-    spdm_context->local_context.version.spdm_version_count = 5;
-    spdm_context->local_context.version.spdm_version[0].major_version = 5;
-    spdm_context->local_context.version.spdm_version[0].minor_version = 5;
-    spdm_context->local_context.version.spdm_version[1].major_version = 4;
-    spdm_context->local_context.version.spdm_version[1].minor_version = 5;
-    spdm_context->local_context.version.spdm_version[2].major_version = 0;
-    spdm_context->local_context.version.spdm_version[2].minor_version = 9;
-    spdm_context->local_context.version.spdm_version[3].major_version = 1;
-    spdm_context->local_context.version.spdm_version[3].minor_version = 0;
-    spdm_context->local_context.version.spdm_version[4].major_version = 1;
-    spdm_context->local_context.version.spdm_version[4].minor_version = 1;
-    status = spdm_get_version(spdm_context);
-    assert_int_equal(status, RETURN_SUCCESS);
-    assert_int_equal(
-        spdm_context->connection_info.version.major_version, 1);
-    assert_int_equal(
-        spdm_context->connection_info.version.minor_version, 1);
+    // any version in res_ver_set is higher than ver must not in req_ver_set
+    unsigned int j = nondet_uint();
+    __ESBMC_assume(j < res_ver_num);
+    if (spdm_version_number_compare(res_ver_set[j], ver))
+      assert(!is_member(req_ver_set, req_ver_num, res_ver_set[j]));
 }
 
 spdm_test_context_t mSpdmRequesterGetVersionTestContext = {
@@ -742,11 +123,81 @@ spdm_test_context_t mSpdmRequesterGetVersionTestContext = {
     spdm_requester_get_version_test_receive_message,
 };
 
+// taken from spdm_unit_test_group_setup
+int test_setup()
+{
+    spdm_test_context_t *spdm_test_context;
+    void *spdm_context;
+
+    spdm_test_context = get_spdm_test_context();
+    spdm_test_context->spdm_context =
+        (void *)malloc(libspdm_get_context_size());
+    if (spdm_test_context->spdm_context == NULL) {
+        return -1;
+    }
+    spdm_context = spdm_test_context->spdm_context;
+    spdm_test_context->case_id = 0xFFFFFFFF;
+
+    libspdm_init_context(spdm_context);
+    libspdm_register_device_io_func(spdm_context,
+                     spdm_test_context->send_message,
+                     spdm_test_context->receive_message);
+    libspdm_register_transport_layer_func(spdm_context,
+                       spdm_transport_test_encode_message,
+                       spdm_transport_test_decode_message);
+
+    setup_spdm_test_context(spdm_test_context);
+    return 0;
+}
+
+// taken from spdm_unit_test_group_teardown
+int test_teardown()
+{
+    spdm_test_context_t *spdm_test_context;
+    spdm_test_context = get_spdm_test_context();
+    free(spdm_test_context->spdm_context);
+    spdm_test_context->spdm_context = NULL;
+    spdm_test_context->case_id = 0xFFFFFFFF;
+    return 0;
+}
+
 int main(void)
 {
     setup_spdm_test_context(&mSpdmRequesterGetVersionTestContext);
-    
-    test_spdm_requester_get_version_case1(&mSpdmRequesterGetVersionTestContext);
+    spdm_test_context_t *spdm_test_context = get_spdm_test_context();
 
+    // Some trivial checks just to make sure that the initialisation worked.
+    // Basically we make sure that the global test context has been set up (not NULL)
+    // with the our "send" and "receive" message handlers, the spdm_context has not been set up
+    assert(spdm_test_context != NULL);
+    assert(&mSpdmRequesterGetVersionTestContext == spdm_test_context);
+    assert(spdm_test_context->send_message == &spdm_requester_get_version_test_send_message);
+    assert(spdm_test_context->receive_message == &spdm_requester_get_version_test_receive_message);
+    assert(spdm_test_context->signature == SPDM_TEST_CONTEXT_SIGNATURE);    
+    assert(spdm_test_context->spdm_context == NULL);
+    
+    test_setup();
+    // Some trivial checks to make sure that the spdm_test_context and spdm_context were setup correctly
+    spdm_context_t *spdm_context = spdm_test_context->spdm_context;
+    assert(spdm_test_context->case_id == 0xFFFFFFFF);
+    assert(spdm_context != NULL);
+    assert(spdm_context->send_message == &spdm_requester_get_version_test_send_message);
+    assert(spdm_context->receive_message == &spdm_requester_get_version_test_receive_message);
+    assert(spdm_context->transport_encode_message == &spdm_transport_test_encode_message);
+    assert(spdm_context->transport_decode_message == &spdm_transport_test_decode_message);
+
+    //test_try_spdm_get_version();
+    //assert(spdm_test_context->case_id == 0x1);
+
+//    return_status status = spdm_get_version(spdm_context);
+    // some checks after the spdm_get_version call
+//    assert(spdm_context->retry_times == 3);
+//    assert(spdm_context->connection_info.connection_state == LIBSPDM_CONNECTION_STATE_NOT_STARTED);
+
+    test_teardown();
+    // Some trivial checks to make sure that spdm_test_context->spdm_context was freed
+    assert(spdm_test_context->case_id == 0xFFFFFFFF);
+    assert(spdm_test_context->spdm_context == NULL);
+    
     return 0;
 }
