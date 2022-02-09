@@ -2,7 +2,7 @@ LIBSPDM="$(cd "$( dirname "${BASH_SOURCE[0]}" )"/../../.. &> /dev/null && pwd)"
 
 $HOME/esbmc/release/bin/esbmc \
  --force-malloc-success \
- --goto-unwind \
+ --goto-unwind --unlimited-goto-unwind \
  --k-step 10 --unlimited-k-steps \
  --k-induction --max-inductive-step 3 \
  $LIBSPDM/unit_test/model_check/test_spdm_requester_get_version/get_version.c \
@@ -14,6 +14,7 @@ $HOME/esbmc/release/bin/esbmc \
  $LIBSPDM/library/spdm_common_lib/libspdm_com_context_data_session.c \
  $LIBSPDM/library/spdm_secured_message_lib/libspdm_secmes_context_data.c \
  $LIBSPDM/library/spdm_secured_message_lib/libspdm_secmes_encode_decode.c \
+ $LIBSPDM/library/spdm_secured_message_lib/libspdm_secmes_session.c \
  $LIBSPDM/library/spdm_crypt_lib/libspdm_crypt_crypt.c \
  $LIBSPDM/library/spdm_requester_lib/libspdm_req_send_receive.c \
  $LIBSPDM/library/spdm_requester_lib/libspdm_req_handle_error_response.c \
@@ -24,6 +25,9 @@ $HOME/esbmc/release/bin/esbmc \
  $LIBSPDM/os_stub/debuglib_null/debuglib.c \
  $LIBSPDM/os_stub/cryptlib_null/rand/rand.c \
  $LIBSPDM/os_stub/cryptlib_null/hash/sha.c \
+ $LIBSPDM/os_stub/cryptlib_null/cipher/aead_aes_gcm.c \
+ $LIBSPDM/os_stub/cryptlib_null/cipher/aead_chacha20_poly1305.c \
+ $LIBSPDM/os_stub/cryptlib_null/kdf/hkdf_sha.c \
  -I$LIBSPDM/unit_test/spdm_unit_test_common/ \
  -I$LIBSPDM/unit_test/include/ \
  -I$LIBSPDM/include/ \
