@@ -163,41 +163,31 @@ int test_teardown()
 
 int main(void)
 {
-    setup_spdm_test_context(&mSpdmRequesterGetVersionTestContext);
-    spdm_test_context_t *spdm_test_context = get_spdm_test_context();
+    // Creating a point to an spdm_context_t variable here;
+    //spdm_context_t *spdm_context = __builtin_alloca(sizeof(spdm_context_t));
 
-    // Some trivial checks just to make sure that the initialisation worked.
-    // Basically we make sure that the global test context has been set up (not NULL)
-    // with the our "send" and "receive" message handlers, the spdm_context has not been set up
-    assert(spdm_test_context != NULL);
-    assert(&mSpdmRequesterGetVersionTestContext == spdm_test_context);
-    assert(spdm_test_context->send_message == &spdm_requester_get_version_test_send_message);
-    assert(spdm_test_context->receive_message == &spdm_requester_get_version_test_receive_message);
-    assert(spdm_test_context->signature == SPDM_TEST_CONTEXT_SIGNATURE);    
-    assert(spdm_test_context->spdm_context == NULL);
+    spdm_context_t my_spdm_context;
+    spdm_context_t *spdm_context = &my_spdm_context;
+
+    // Initializing spdm_context_here
+    libspdm_init_context(spdm_context);
+    libspdm_register_device_io_func(spdm_context,
+                      spdm_requester_get_version_test_send_message,
+                      spdm_requester_get_version_test_receive_message);
+    libspdm_register_transport_layer_func(spdm_context,
+                       spdm_transport_test_encode_message,
+                       spdm_transport_test_decode_message);
     
-    test_setup();
-    // Some trivial checks to make sure that the spdm_test_context and spdm_context were setup correctly
-    spdm_context_t *spdm_context = spdm_test_context->spdm_context;
-    assert(spdm_test_context->case_id == 0xFFFFFFFF);
     assert(spdm_context != NULL);
     assert(spdm_context->send_message == &spdm_requester_get_version_test_send_message);
     assert(spdm_context->receive_message == &spdm_requester_get_version_test_receive_message);
     assert(spdm_context->transport_encode_message == &spdm_transport_test_encode_message);
     assert(spdm_context->transport_decode_message == &spdm_transport_test_decode_message);
-
-    //test_try_spdm_get_version();
-    //assert(spdm_test_context->case_id == 0x1);
-
-//    return_status status = spdm_get_version(spdm_context);
-    // some checks after the spdm_get_version call
-//    assert(spdm_context->retry_times == 3);
-//    assert(spdm_context->connection_info.connection_state == LIBSPDM_CONNECTION_STATE_NOT_STARTED);
-
-    test_teardown();
-    // Some trivial checks to make sure that spdm_test_context->spdm_context was freed
-    assert(spdm_test_context->case_id == 0xFFFFFFFF);
-    assert(spdm_test_context->spdm_context == NULL);
+    assert(spdm_context->retry_times == 3);
+    assert(spdm_context->connection_info.connection_state == LIBSPDM_CONNECTION_STATE_NOT_STARTED);
+    assert(spdm_context->local_context.version.spdm_version_count == 2);
     
+    //return_status status = spdm_get_version(spdm_context);
+
     return 0;
 }
