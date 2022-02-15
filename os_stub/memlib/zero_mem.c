@@ -26,6 +26,8 @@
 **/
 void *zero_mem(OUT void *buffer, IN uintn length)
 {
+    return __ESBMC_memset(buffer, 0, length);
+    /*
     volatile uint8_t *pointer;
 
     pointer = (uint8_t *)buffer;
@@ -34,4 +36,5 @@ void *zero_mem(OUT void *buffer, IN uintn length)
     }
 
     return buffer;
+    */
 }
