@@ -3,8 +3,6 @@ LIBSPDM="$(cd "$( dirname "${BASH_SOURCE[0]}" )"/../../.. &> /dev/null && pwd)"
 $HOME/esbmc/release/bin/esbmc \
  --force-malloc-success \
  --goto-unwind --unlimited-goto-unwind \
- --k-step 10 --unlimited-k-steps \
- --k-induction --max-inductive-step 3 \
  $LIBSPDM/unit_test/model_check/test_spdm_requester_get_version/get_version.c \
  $LIBSPDM/unit_test/spdm_unit_test_common/common.c \
  $LIBSPDM/unit_test/spdm_transport_test_lib/common.c \
