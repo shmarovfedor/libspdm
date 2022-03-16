@@ -30,23 +30,24 @@ return_status libspdm_send_request(IN void *context, IN uint32_t *session_id,
     return_status status;
     uint8_t message[LIBSPDM_MAX_MESSAGE_BUFFER_SIZE];
     uintn message_size;
-
+    
     spdm_context = context;
 
     DEBUG((DEBUG_INFO, "spdm_send_spdm_request[%x] (0x%x): \n",
            (session_id != NULL) ? *session_id : 0x0, request_size));
-    internal_dump_hex(request, request_size);
-
+    //internal_dump_hex(request, request_size);
+    
     message_size = sizeof(message);
     status = spdm_context->transport_encode_message(
         spdm_context, session_id, is_app_message, TRUE, request_size,
         request, &message_size, message);
+    
     if (RETURN_ERROR(status)) {
         DEBUG((DEBUG_INFO, "transport_encode_message status - %p\n",
                status));
         return status;
     }
-
+    
     status = spdm_context->send_message(spdm_context, message_size, message,
                         0);
     if (RETURN_ERROR(status)) {
