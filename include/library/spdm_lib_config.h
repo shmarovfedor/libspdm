@@ -8,13 +8,13 @@
 #define __SPDM_LIB_CONFIG_H__
 
 /* How many version entries in a VERSION response that a Requester will tolerate */
-#define LIBSPDM_MAX_VERSION_COUNT 5
+#define LIBSPDM_MAX_VERSION_COUNT 3
 
 #define LIBSPDM_PSK_CONTEXT_LENGTH LIBSPDM_MAX_HASH_SIZE
 #define LIBSPDM_PSK_MAX_HINT_LENGTH 16
 
-//#define LIBSPDM_MAX_MEASUREMENT_BLOCK_COUNT 8
-#define LIBSPDM_MAX_MEASUREMENT_BLOCK_COUNT 1
+#define LIBSPDM_MAX_MEASUREMENT_BLOCK_COUNT 8
+//#define LIBSPDM_MAX_MEASUREMENT_BLOCK_COUNT 1
 
 //#define LIBSPDM_MAX_SESSION_COUNT 4
 #define LIBSPDM_MAX_SESSION_COUNT 1
@@ -29,14 +29,15 @@
 #define LIBSPDM_MAX_CERT_CHAIN_BLOCK_LEN 8
 
 //#define LIBSPDM_MAX_MESSAGE_BUFFER_SIZE 0x1200
-#define LIBSPDM_MAX_MESSAGE_BUFFER_SIZE 0x18
+#define LIBSPDM_MAX_MESSAGE_BUFFER_SIZE 0x14
 
 //#define LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE 0x100  /* to hold message_a before negotiate*/
-//#define LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE 0x14  /* to hold message_a before negotiate*/
+//#define LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE 0x03  /* to hold message_a before negotiate*/
+//#define LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE 0x0F  /* to hold message_a before negotiate*/
 #define LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE 0x10  /* to hold message_a before negotiate*/
 
 //#define LIBSPDM_MAX_MESSAGE_MEDIUM_BUFFER_SIZE 0x300 /* to hold message_k before finished_key is ready*/
-#define LIBSPDM_MAX_MESSAGE_MEDIUM_BUFFER_SIZE 0x16 /* to hold message_k before finished_key is ready*/
+#define LIBSPDM_MAX_MESSAGE_MEDIUM_BUFFER_SIZE 0x12 /* to hold message_k before finished_key is ready*/
 
 #define LIBSPDM_MAX_REQUEST_RETRY_TIMES 3
 

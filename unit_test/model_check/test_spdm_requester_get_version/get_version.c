@@ -53,7 +53,7 @@ return_status spdm_requester_get_version_test_receive_message(
     spdm_response->header.param1 = 0;
     spdm_response->header.param2 = 0;
     
-    // setting from 1 to 5 symbolically defined versions on the responder side
+    // setting from 1 to LIBSPDM_MAX_VERSION_COUNT symbolically defined versions on the responder side
     unsigned int local_ver_count = __VERIFIER_nondet_uint();
     __ESBMC_assume(local_ver_count > 0);
     __ESBMC_assume(local_ver_count <= LIBSPDM_MAX_VERSION_COUNT);
@@ -86,6 +86,7 @@ return_status spdm_requester_get_version_test_receive_message(
     return status;
 }
 
+
 boolean is_member(spdm_version_number_t *ver_set, uintn ver_num, spdm_version_number_t ver) {
   for (int i=0; i<ver_num; i++) {
     if(ver_set[i].major_version == ver.major_version &&
@@ -97,7 +98,8 @@ boolean is_member(spdm_version_number_t *ver_set, uintn ver_num, spdm_version_nu
   return FALSE;
 }
 
-int main(void)
+
+void test_caching()
 {
     // Creating a pointer to an spdm_context_t variable here;
     spdm_context_t *spdm_context = malloc(libspdm_get_context_size());
@@ -120,8 +122,158 @@ int main(void)
     //                   spdm_transport_test_decode_message);
     //assert(spdm_context->transport_encode_message == &spdm_transport_test_encode_message);
     //assert(spdm_context->transport_decode_message == &spdm_transport_test_decode_message);
- 
-    // Setting from 1 to 5 symbolically defined versions in the local context
+    
+    // Initialising spdm_request
+    spdm_get_version_request_t *spdm_request = malloc(sizeof(spdm_get_version_request_t));
+    uintn spdm_request_size = sizeof(spdm_get_version_request_t);
+    //spdm_request->header.spdm_version = SPDM_MESSAGE_VERSION_10;
+    //spdm_request->header.request_response_code = SPDM_GET_VERSION;
+    //spdm_request->header.param1 = 0;
+    //spdm_request->header.param2 = 0;
+
+    // Initialising spdm_response
+    spdm_version_response_mine_t *spdm_response = malloc(sizeof(spdm_version_response_mine_t));
+    uintn spdm_response_size = sizeof(spdm_version_response_mine_t);
+    
+    //spdm_response->header.spdm_version = SPDM_MESSAGE_VERSION_10;
+    //spdm_response->header.request_response_code = SPDM_VERSION;
+    //spdm_response->header.param1 = 0;
+    //spdm_response->header.param2 = 0;
+    
+    // setting from 1 to LIBSPDM_MAX_VERSION_COUNT symbolically defined versions on the responder side
+    //unsigned int local_ver_count = __VERIFIER_nondet_uint();
+    //__ESBMC_assume(local_ver_count > 0);
+    //__ESBMC_assume(local_ver_count <= LIBSPDM_MAX_VERSION_COUNT);
+    //spdm_response->version_number_entry_count = local_ver_count;
+    //for(unsigned int i = 0; i < local_ver_count; i++)
+    //{
+    //  spdm_response->version_number_entry[i].major_version = __VERIFIER_nondet_uint();
+    //  spdm_response->version_number_entry[i].minor_version = __VERIFIER_nondet_uint();
+    //}
+    
+    libspdm_reset_message_a(spdm_context);
+   
+    /* Cache data*/
+    return_status status = libspdm_append_message_a(spdm_context, spdm_request,
+                       spdm_request_size);
+    // RETURN_SECURITY_VIOLATION is returned when 
+    // the appended message overflows LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE
+    if (RETURN_ERROR(status)) {
+        uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
+        // Making sure that message_a is clean before the return
+        for(unsigned int i = 0; i < LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE; i++)
+        {
+          assert(*(ptr++) == 0);
+        }
+        //return RETURN_SECURITY_VIOLATION;
+        assert(0);
+        return;
+    }
+    status = libspdm_append_message_a(spdm_context, spdm_response,
+                       spdm_response_size);
+    if (RETURN_ERROR(status)) {
+        libspdm_reset_message_a(spdm_context);
+        // Making sure that message_a is clean before the return 
+        uint8_t *ptr = &spdm_context->transcript.message_a.buffer; 
+        for(unsigned int i = 0; i < LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE; i++)
+        {
+          assert(*(ptr++) == 0);
+        }
+        //return RETURN_SECURITY_VIOLATION;
+        assert(0);
+        return;
+    }
+
+    assert(status == RETURN_SUCCESS);
+    uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
+    uint8_t *ptr_2 = spdm_request;
+    // Checking that first we have the spdm_request ...
+    for(unsigned int i = 0; i < spdm_request_size; i++)
+    {
+      assert(*(ptr++) == *(ptr_2++));
+    }
+    ptr_2 = spdm_response;
+    // ... and then the spdm_response
+    for(unsigned int i = 0; i < spdm_response_size; i++)
+    {
+      assert(*(ptr++) == *(ptr_2++));
+    }
+    assert(0);
+}
+
+
+int main(void)
+{
+    test_caching();
+
+/*
+    // Creating a pointer to an spdm_context_t variable here;
+    spdm_context_t *spdm_context = malloc(libspdm_get_context_size());
+
+    // Initializing spdm_context_here
+    libspdm_init_context(spdm_context);
+    assert(spdm_context->connection_info.connection_state ==
+        LIBSPDM_CONNECTION_STATE_NOT_STARTED);
+    
+    // Registering IO functions
+    libspdm_register_device_io_func(spdm_context,
+                      spdm_requester_get_version_test_send_message,
+                      spdm_requester_get_version_test_receive_message);
+    //assert(spdm_context->send_message == &spdm_requester_get_version_test_send_message);
+    //assert(spdm_context->receive_message == &spdm_requester_get_version_test_receive_message);
+    
+    // Registering transport functions
+    //libspdm_register_transport_layer_func(spdm_context,
+    //                   spdm_transport_test_encode_message,
+    //                   spdm_transport_test_decode_message);
+    //assert(spdm_context->transport_encode_message == &spdm_transport_test_encode_message);
+    //assert(spdm_context->transport_decode_message == &spdm_transport_test_decode_message);
+*/
+/*    
+    libspdm_reset_message_a(spdm_context);
+    assert(spdm_context->transcript.message_a.max_buffer_size == LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE);
+    uint8_t *ptr = &spdm_context->transcript.message_a.buffer; 
+    for(unsigned int i = 0; i < LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE; i++)
+    {
+      assert(*(ptr++) == 0);
+    }
+*/
+
+/*
+    spdm_version_response_mine_t *spdm_response = malloc(sizeof(spdm_version_response_mine_t));
+    uintn spdm_response_size = sizeof(spdm_response);
+    
+    spdm_response->header.spdm_version = SPDM_MESSAGE_VERSION_10;
+    spdm_response->header.request_response_code = SPDM_VERSION;
+    spdm_response->header.param1 = 0;
+    spdm_response->header.param2 = 0;
+    
+    // setting from 1 to LIBSPDM_MAX_VERSION_COUNT symbolically defined versions on the responder side
+    unsigned int local_ver_count = __VERIFIER_nondet_uint();
+    __ESBMC_assume(local_ver_count > 0);
+    __ESBMC_assume(local_ver_count <= LIBSPDM_MAX_VERSION_COUNT);
+    spdm_response->version_number_entry_count = local_ver_count;
+    for(unsigned int i = 0; i < local_ver_count; i++)
+    {
+      spdm_response->version_number_entry[i].major_version = __VERIFIER_nondet_uint();
+      spdm_response->version_number_entry[i].minor_version = __VERIFIER_nondet_uint();
+    }
+//    zero_mem(&spdm_response, sizeof(spdm_response));
+    
+    return_status status = libspdm_append_message_a(spdm_context, &spdm_response,
+                       spdm_response_size);
+   
+    if (RETURN_ERROR(status)) {
+        libspdm_reset_message_a(spdm_context);
+        return RETURN_SECURITY_VIOLATION;
+    }
+    else
+    {
+      assert(status == RETURN_SUCCESS);
+    }
+*/    
+    /*
+    // Setting from 1 to LIBSPDM_MAX_VERSION_COUNT symbolically defined versions in the local context
     unsigned int local_ver_count = __VERIFIER_nondet_uint();
     __ESBMC_assume(local_ver_count > 0);
     __ESBMC_assume(local_ver_count <= LIBSPDM_MAX_VERSION_COUNT);
@@ -173,6 +325,7 @@ int main(void)
       //assert( status == (uint32_t)RETURN_DEVICE_ERROR || 
       //        status == (uint32_t)RETURN_SECURITY_VIOLATION);
     }
+    */
 
     
     
