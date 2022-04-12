@@ -3,7 +3,7 @@
     Copyright 2021 DMTF. All rights reserved.
     License: BSD 3-Clause License. For full text see link: https://github.com/DMTF/libspdm/blob/main/LICENSE.md
 **/
-#define libspdm_append_message_a(a,b,c) libspdm_append_message_a_empty(a,b,c)
+//#define libspdm_append_message_a(a,b,c) libspdm_append_message_a_empty(a,b,c)
 
 #include "spdm_unit_test.h"
 #include "internal/libspdm_requester_lib.h"
@@ -87,6 +87,36 @@ boolean is_member(spdm_version_number_t *ver_set, uintn ver_num, spdm_version_nu
   return FALSE;
 }
 
+
+void test_resetting()
+{
+    // Creating a pointer to an spdm_context_t variable here;
+    spdm_context_t *spdm_context = malloc(libspdm_get_context_size());
+
+    // Initializing spdm_context_here
+    libspdm_init_context(spdm_context);
+    assert(spdm_context->connection_info.connection_state ==
+        LIBSPDM_CONNECTION_STATE_NOT_STARTED);
+
+    // Registering IO functions
+    libspdm_register_device_io_func(spdm_context,
+                      spdm_requester_get_version_test_send_message,
+                      spdm_requester_get_version_test_receive_message);
+
+    // Setting a pointer at the beginning of message_a inside the spdm_context
+    uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
+
+    // Resetting message_a 
+    libspdm_reset_message_a(spdm_context);
+
+    // Every byte inside message_a must be set to 0
+    {
+      for(unsigned int i = 0; i < spdm_context->transcript.message_a.max_buffer_size; i++)
+        assert(*(ptr++) == 0);
+    }
+}
+
+
 void test_caching() {
     // Creating a pointer to an spdm_context_t variable here;
     spdm_context_t *spdm_context = malloc(libspdm_get_context_size());
@@ -100,93 +130,73 @@ void test_caching() {
     libspdm_register_device_io_func(spdm_context,
                       spdm_requester_get_version_test_send_message,
                       spdm_requester_get_version_test_receive_message);
-    //assert(spdm_context->send_message == &spdm_requester_get_version_test_send_message);
-    //assert(spdm_context->receive_message == &spdm_requester_get_version_test_receive_message);
 
-    // Registering transport functions
-    //libspdm_register_transport_layer_func(spdm_context,
-    //                   spdm_transport_test_encode_message,
-    //                   spdm_transport_test_decode_message);
-    //assert(spdm_context->transport_encode_message == &spdm_transport_test_encode_message);
-    //assert(spdm_context->transport_decode_message == &spdm_transport_test_decode_message);
-
-    // Initialising spdm_request
-    spdm_get_version_request_t *spdm_request = malloc(sizeof(spdm_get_version_request_t));
-    uintn spdm_request_size = sizeof(spdm_get_version_request_t);
-    //spdm_request->header.spdm_version = SPDM_MESSAGE_VERSION_10;
-    //spdm_request->header.request_response_code = SPDM_GET_VERSION;
-    //spdm_request->header.param1 = 0;
-    //spdm_request->header.param2 = 0;
-
-    // Initialising spdm_response
-    spdm_version_response_mine_t *spdm_response = malloc(sizeof(spdm_version_response_mine_t));
-    uintn spdm_response_size = sizeof(spdm_version_response_mine_t);
-
-    //spdm_response->header.spdm_version = SPDM_MESSAGE_VERSION_10;
-    //spdm_response->header.request_response_code = SPDM_VERSION;
-    //spdm_response->header.param1 = 0;
-    //spdm_response->header.param2 = 0;
-
-    // setting from 1 to LIBSPDM_MAX_VERSION_COUNT symbolically defined versions on the responder side
-    //unsigned int local_ver_count = __VERIFIER_nondet_uint();
-    //__ESBMC_assume(local_ver_count > 0);
-    //__ESBMC_assume(local_ver_count <= LIBSPDM_MAX_VERSION_COUNT);
-    //spdm_response->version_number_entry_count = local_ver_count;
-    //for(unsigned int i = 0; i < local_ver_count; i++)
-    //{
-    //  spdm_response->version_number_entry[i].major_version = __VERIFIER_nondet_uint();
-    //  spdm_response->version_number_entry[i].minor_version = __VERIFIER_nondet_uint();
-    //}
-
-    libspdm_reset_message_a(spdm_context);
-
-    /* Cache data*/
-    return_status status = libspdm_append_message_a(spdm_context, spdm_request,
-                       spdm_request_size);
-    // RETURN_SECURITY_VIOLATION is returned when
-    // the appended message overflows LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE
-    if (RETURN_ERROR(status)) {
-        uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
-        // Making sure that message_a is clean before the return
-        for(unsigned int i = 0; i < LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE; i++)
-        {
-          assert(*(ptr++) == 0);
-        }
-        //return RETURN_SECURITY_VIOLATION;
-        assert(0);
-        return;
-    }
-    status = libspdm_append_message_a(spdm_context, spdm_response,
-                       spdm_response_size);
-    if (RETURN_ERROR(status)) {
-        libspdm_reset_message_a(spdm_context);
-        // Making sure that message_a is clean before the return
-        uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
-        for(unsigned int i = 0; i < LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE; i++)
-        {
-          assert(*(ptr++) == 0);
-        }
-        //return RETURN_SECURITY_VIOLATION;
-        assert(0);
-        return;
+    // Set a message size to some value in the range [0, LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE + 1],
+    // where LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE is the size of message_a buffer in spdm_context
+    uintn message_size = __VERIFIER_nondet_uint();
+    __ESBMC_assume(message_size >= 0);
+    __ESBMC_assume(message_size <= LIBSPDM_MAX_MESSAGE_SMALL_BUFFER_SIZE + 1);
+    
+    // Create a symbolic message of size message_size
+    uint8_t *message = malloc(message_size);
+    
+    // Saving the size of message_a cache before appending a new message
+    uintn buffer_size_before = spdm_context->transcript.message_a.buffer_size;
+    // Copying the content of message_a cache before appending a new message
+    uint8_t *old_message_a = malloc(buffer_size_before);
+    {
+      uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
+      for(unsigned int i = 0; i < buffer_size_before; i++)
+        old_message_a[i] = *(ptr++);
     }
 
-    assert(status == RETURN_SUCCESS);
+    // Set a pointer to the free part of message_a  
+    //uint8_t *ptr = &spdm_context->transcript.message_a.buffer + 
+    //                spdm_context->transcript.message_a.buffer_size;
+   
+    // Appending the message to message_a inside the spdm_context 
+    return_status status = libspdm_append_message_a(spdm_context, message, message_size);
+    
     uint8_t *ptr = &spdm_context->transcript.message_a.buffer;
-    uint8_t *ptr_2 = spdm_request;
-    // Checking that first we have the spdm_request ...
-    for(unsigned int i = 0; i < spdm_request_size; i++)
+    // If the appending is successfull ...
+    if(status == RETURN_SUCCESS)
     {
-      assert(*(ptr++) == *(ptr_2++));
+      // ... then the appending should not affect anything that was in the message_a buffer
+      // before the appended message and ...
+      for(unsigned int i = 0; i < buffer_size_before; i++)
+        assert(*(ptr++) == old_message_a[i]);
+
+      uint8_t *ptr_2 = message;
+      // ... all the bytes of the message must  have been appended to the message_a buffer and ...
+      for(unsigned int i = 0; i < message_size; i++)
+        assert(*(ptr++) == *(ptr_2++));
+      
+      // ... everything else past the appended message in the buffer must be 0
+      for(unsigned int i = 0; i < spdm_context->transcript.message_a.max_buffer_size - 
+                                    spdm_context->transcript.message_a.buffer_size; i++)
+        assert(*(ptr++) == 0);
     }
-    ptr_2 = spdm_response;
-    // ... and then the spdm_response
-    for(unsigned int i = 0; i < spdm_response_size; i++)
+    // If the appending failed ...
+    else
     {
-      assert(*(ptr++) == *(ptr_2++));
+      // ... then the appending should not affect anything that was in the message_a buffer
+      // before the appended message and ...
+      for(unsigned int i = 0; i < buffer_size_before; i++)
+        assert(*(ptr++) == old_message_a[i]);
+      
+      // ... the size of the message_a content should remain unchanged and ...
+      assert(buffer_size_before == spdm_context->transcript.message_a.buffer_size);
+
+      // ... nothing else should be appended (everything else past the point of 
+      // attempted appendage must be 0)
+      for(unsigned int i = 0; i < spdm_context->transcript.message_a.max_buffer_size - 
+                                    spdm_context->transcript.message_a.buffer_size; i++)
+        assert(*(ptr++) == 0);
     }
-    assert(0);
+
+    return;
 }
+
 
 void test_negotiate_connection_version() {
     // Creating a pointer to an spdm_context_t variable here;
@@ -266,7 +276,8 @@ void test_spdm_version_number_sort() {
 
 int main(void)
 {
-  // test_caching();
+  test_resetting();
+  test_caching();
   test_negotiate_connection_version();
   return 0;
 }
