@@ -6,6 +6,14 @@
 
 #include "internal/libspdm_requester_lib.h"
 
+#define libspdm_reset_context(c) ;
+#define libspdm_reset_message_a(c) ;
+#define libspdm_reset_message_b(c) ;
+#define libspdm_reset_message_c(c) ;
+#define libspdm_append_message_a(a,b,c) RETURN_SUCCESS
+#define spdm_send_spdm_request(spdm_context, sid, size, req)     spdm_context->send_message(spdm_context, size, req, 0)
+#define spdm_receive_spdm_response(spdm_context, sid, size, res) spdm_context->receive_message(spdm_context, size, res, 0)
+
 #pragma pack(1)
 typedef struct {
     spdm_message_header_t header;
@@ -155,32 +163,28 @@ return_status try_spdm_get_version(IN spdm_context_t *spdm_context)
     spdm_request.header.param1 = 0;
     spdm_request.header.param2 = 0;
 
-    //libspdm_reset_context(spdm_context);
+    libspdm_reset_context(spdm_context);
 
-    //spdm_reset_message_buffer_via_request_code(spdm_context, NULL,
-    //                    spdm_request.header.request_response_code);
-   
-    //status = spdm_send_spdm_request(spdm_context, NULL,
-    //                sizeof(spdm_request), &spdm_request);
+    spdm_reset_message_buffer_via_request_code(spdm_context, NULL,
+                        spdm_request.header.request_response_code);
 
-    status = spdm_context->send_message(spdm_context, sizeof(spdm_request), &spdm_request, 0);
-    
+    status = spdm_send_spdm_request(spdm_context, NULL,
+                    sizeof(spdm_request), &spdm_request);
+
     if (RETURN_ERROR(status)) {
         return RETURN_DEVICE_ERROR;
     }
-    
-    //libspdm_reset_message_a(spdm_context);
-    //libspdm_reset_message_b(spdm_context);
-    //libspdm_reset_message_c(spdm_context);
+
+    libspdm_reset_message_a(spdm_context);
+    libspdm_reset_message_b(spdm_context);
+    libspdm_reset_message_c(spdm_context);
 
     spdm_response_size = sizeof(spdm_response);
     zero_mem(&spdm_response, sizeof(spdm_response));
-   
-    //status = spdm_receive_spdm_response(
-    //    spdm_context, NULL, &spdm_response_size, &spdm_response);
-   
-    status = spdm_context->receive_message(spdm_context, &spdm_response_size, &spdm_response, 0);
-   
+
+    status = spdm_receive_spdm_response(
+        spdm_context, NULL, &spdm_response_size, &spdm_response);
+
     if (RETURN_ERROR(status)) {
         return RETURN_DEVICE_ERROR;
     }
@@ -220,9 +224,9 @@ return_status try_spdm_get_version(IN spdm_context_t *spdm_context)
     spdm_response_size = sizeof(spdm_version_response) +
                  spdm_response.version_number_entry_count *
                      sizeof(spdm_version_number_t);
-    
+
     /* Cache data*/
-/*
+
     status = libspdm_append_message_a(spdm_context, &spdm_request,
                        sizeof(spdm_request));
     if (RETURN_ERROR(status)) {
@@ -234,10 +238,9 @@ return_status try_spdm_get_version(IN spdm_context_t *spdm_context)
         libspdm_reset_message_a(spdm_context);
         return RETURN_SECURITY_VIOLATION;
     }
-*/    
     /* spdm_negotiate_connection_version will change the spdm_response.*/
     /* It must be done after append_message_a.*/
-   
+
     result = spdm_negotiate_connection_version(spdm_context, spdm_context->local_context.version.spdm_version,
                                     spdm_context->local_context.version.spdm_version_count,
                                     spdm_response.version_number_entry,
