@@ -7,9 +7,10 @@ $HOME/esbmc/release/bin/esbmc \
  --goto-unwind --unlimited-goto-unwind \
  $LIBSPDM/unit_test/model_check/test_spdm_requester/key_exchange.c \
  $LIBSPDM/unit_test/spdm_unit_test_common/common.c \
+ $LIBSPDM/unit_test/spdm_unit_test_common/support.c \
  $LIBSPDM/unit_test/spdm_transport_test_lib/common.c \
  $LIBSPDM/unit_test/spdm_transport_test_lib/test.c \
- $LIBSPDM/library/spdm_requester_lib/libspdm_req_get_version.c \
+ $LIBSPDM/library/spdm_requester_lib/libspdm_req_key_exchange.c \
  $LIBSPDM/library/spdm_common_lib/libspdm_com_context_data.c \
  $LIBSPDM/library/spdm_common_lib/libspdm_com_context_data_session.c \
  $LIBSPDM/library/spdm_secured_message_lib/libspdm_secmes_context_data.c \
@@ -28,6 +29,12 @@ $HOME/esbmc/release/bin/esbmc \
  $LIBSPDM/os_stub/cryptlib_null/cipher/aead_aes_gcm.c \
  $LIBSPDM/os_stub/cryptlib_null/cipher/aead_chacha20_poly1305.c \
  $LIBSPDM/os_stub/cryptlib_null/kdf/hkdf_sha.c \
+ $LIBSPDM/os_stub/cryptlib_null/pk/sm2.c \
+ $LIBSPDM/os_stub/cryptlib_null/pk/rsa_basic.c \
+ $LIBSPDM/os_stub/cryptlib_null/pk/ec.c \
+ $LIBSPDM/os_stub/cryptlib_null/pk/ecd.c \
+ $LIBSPDM/os_stub/cryptlib_null/pk/x509.c \
+ $LIBSPDM/os_stub/spdm_device_secret_lib_sample/cert.c \
  -I$LIBSPDM/unit_test/spdm_unit_test_common/ \
  -I$LIBSPDM/unit_test/include/ \
  -I$LIBSPDM/include/ \
